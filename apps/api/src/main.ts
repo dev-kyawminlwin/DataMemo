@@ -32,7 +32,7 @@ async function bootstrap() {
   const corsOrigin = process.env.CORS_ORIGIN ?? 'http://localhost:3000';
   const allowedOrigins = corsOrigin.split(',').map((s) => s.trim());
   app.enableCors({
-    origin: (origin, callback) => {
+    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
       // Allow requests with no origin (mobile apps, curl, etc.)
       if (!origin) return callback(null, true);
       // If wildcard, allow everything
