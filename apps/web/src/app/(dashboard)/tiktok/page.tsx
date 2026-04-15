@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import { apiFetch, getApiBaseUrl } from "@/lib/api";
+import { apiFetch } from "@/lib/api";
 
 type MeUser = { id: string; email: string; role: string };
 

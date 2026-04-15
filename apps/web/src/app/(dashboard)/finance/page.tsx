@@ -119,7 +119,7 @@ export default function FinancePage() {
     setEditingId(row.id);
     setError(null);
     try {
-      const d = await apiFetch<any>(`/finance/${row.id}`);
+      const d = await apiFetch<ListItem & { referenceNote?: string | null }>(`/finance/${row.id}`);
       setTransactionType(d.amount > 0 ? "income" : "expense");
       setDetail({
         id: d.id,
