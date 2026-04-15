@@ -30,8 +30,17 @@ async function bootstrap() {
   prisma.enableShutdownHooks(app);
 
   const corsOrigin = process.env.CORS_ORIGIN ?? 'http://localhost:3000';
+  const allowedOrigins = corsOrigin.split(',').map((s) => s.trim());
   app.enableCors({
-    origin: corsOrigin.split(',').map((s) => s.trim()),
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, etc.)
+      if (!origin) return callback(null, true);
+      // If wildcard, allow everything
+      if (allowedOrigins.includes('*')) return callback(null, true);
+      // Check against whitelist
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      callback(new Error(`CORS: origin ${origin} not allowed`));
+    },
     credentials: true,
   });
 
