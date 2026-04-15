@@ -29,8 +29,6 @@ async function bootstrap() {
   const prisma = app.get(PrismaService);
   prisma.enableShutdownHooks(app);
 
-  const corsOrigin = process.env.CORS_ORIGIN ?? 'http://localhost:3000';
-  const allowedOrigins = corsOrigin.split(',').map((s) => s.trim());
   app.enableCors({
     origin: true,
     credentials: true,
