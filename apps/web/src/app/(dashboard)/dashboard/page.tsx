@@ -109,7 +109,7 @@ export default function DashboardPage() {
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
+                  <Tooltip formatter={(value) => formatCurrency(Number(value))} />
                 </PieChart>
               </ResponsiveContainer>
             ) : (
@@ -135,7 +135,7 @@ export default function DashboardPage() {
               ]}>
                 <XAxis dataKey="name" stroke="#a1a1aa" fontSize={12} tickLine={false} axisLine={false} />
                 <YAxis stroke="#a1a1aa" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `$${val}`} />
-                <Tooltip cursor={{fill: 'transparent'}} formatter={(value: number) => formatCurrency(value)} />
+                <Tooltip cursor={{fill: 'transparent'}} formatter={(value) => formatCurrency(Number(value))} />
                 <Bar dataKey="income" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={60} />
                 <Bar dataKey="expense" fill="#ef4444" radius={[4, 4, 0, 0]} maxBarSize={60} />
               </BarChart>
