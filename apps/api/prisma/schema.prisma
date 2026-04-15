@@ -1,0 +1,244 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  super_admin
+  admin
+  finance
+  staff
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  displayName  String?
+  role         UserRole @default(staff)
+  isActive     Boolean  @default(true)
+
+  sessions     Session[]
+  auditLogs    AuditLog[] @relation("AuditActor")
+  facebookAssetsAssigned FacebookAsset[] @relation("FacebookAssetAssignee")
+  tiktokAssetsAssigned   TikTokAsset[]   @relation("TikTokAssetAssignee")
+  financeTransactions    FinanceTransaction[] @relation("FinanceTransactionCreator")
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deletedAt    DateTime?
+
+  @@index([role])
+  @@index([isActive])
+}
+
+enum FacebookCategory {
+  profile
+  bm
+  page
+  ads_account
+}
+
+enum FacebookAssetTier {
+  data
+  runner
+  test
+}
+
+enum FacebookOpStatus {
+  active
+  disabled
+  restricted
+  dead
+}
+
+model FacebookAsset {
+  id                String            @id @default(cuid())
+  name              String
+  category          FacebookCategory
+  assetType         FacebookAssetTier @map("asset_type")
+  loginEmail        String            @map("login_email")
+  passwordCipher    String            @map("password_cipher")
+  twoFaRecoveryInfo String?           @map("two_fa_recovery_info")
+  assignedToUserId  String?           @map("assigned_to_user_id")
+  status            FacebookOpStatus
+  spendLimit        Decimal?          @map("spend_limit") @db.Decimal(18, 2)
+  notes             String?
+
+  assignedTo User? @relation("FacebookAssetAssignee", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@index([category])
+  @@index([assetType])
+  @@index([status])
+  @@index([name])
+  @@index([loginEmail])
+  @@index([assignedToUserId])
+  @@map("facebook_assets")
+}
+
+model Session {
+  id               String   @id @default(cuid())
+  userId           String
+  refreshTokenHash String
+  ip               String?
+  userAgent        String?
+  createdAt        DateTime @default(now())
+  revokedAt        DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model AuditLog {
+  id           String   @id @default(cuid())
+  actorUserId  String?
+  action       String
+  resourceType String
+  resourceId   String?
+  metadata     Json?
+  ip           String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  actor User? @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId])
+  @@index([resourceType])
+  @@index([createdAt])
+}
+
+// ----------------------------------------------------------------------
+// TIKTOK ASSETS
+// ----------------------------------------------------------------------
+
+enum TikTokCategory {
+  profile
+  bc
+  ads_account
+}
+
+enum TikTokAssetTier {
+  data
+  runner
+  test
+}
+
+enum TikTokOpStatus {
+  active
+  disabled
+  restricted
+  dead
+}
+
+model TikTokAsset {
+  id                String            @id @default(cuid())
+  name              String
+  category          TikTokCategory
+  assetType         TikTokAssetTier   @map("asset_type")
+  loginEmail        String            @map("login_email")
+  passwordCipher    String            @map("password_cipher")
+  assignedToUserId  String?           @map("assigned_to_user_id")
+  status            TikTokOpStatus
+  spendLimit        Decimal?          @map("spend_limit") @db.Decimal(18, 2)
+  pixelId           String?           @map("pixel_id")
+  notes             String?
+
+  assignedTo User? @relation("TikTokAssetAssignee", fields: [assignedToUserId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  @@index([category])
+  @@index([assetType])
+  @@index([status])
+  @@index([name])
+  @@index([assignedToUserId])
+  @@map("tiktok_assets")
+}
+
+// ----------------------------------------------------------------------
+// FINANCE REPORT
+// ----------------------------------------------------------------------
+
+enum FinanceCategory {
+  salary
+  ads_spend
+  software_subscription
+  office_supplies
+  hardware
+  revenue_product_a
+  revenue_product_b
+  other
+}
+
+model FinanceTransaction {
+  id            String          @id @default(cuid())
+  amount        Decimal         @db.Decimal(18, 2) // >0 for income, <0 for expense
+  description   String
+  date          DateTime
+  receivedFrom  String?         @map("received_from")
+  paidTo        String?         @map("paid_to")
+  category      FinanceCategory
+  referenceNote String?         @map("reference_note")
+  createdById   String?         @map("created_by_id")
+
+  createdBy     User?           @relation("FinanceTransactionCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@index([date])
+  @@index([createdById])
+  @@index([category])
+  @@index([amount])
+  @@map("finance_transactions")
+}
+
+// ----------------------------------------------------------------------
+// SUPPORT TOOL VAULT
+// ----------------------------------------------------------------------
+
+enum SupportPlatformType {
+  salesmartly
+  jivo
+  wellytalk
+  other
+}
+
+model SupportToolAccount {
+  id              String              @id @default(cuid())
+  companyName     String              @map("company_name")
+  platformType    SupportPlatformType @map("platform_type")
+  
+  adminAccount    String?             @map("admin_account")
+  adminPassword   String?             @map("admin_password")
+  adminNickname   String?             @map("admin_nickname")
+
+  csAccount       String?             @map("cs_account")
+  csPassword      String?             @map("cs_password")
+  csNickname      String?             @map("cs_nickname")
+
+  financeAccount  String?             @map("finance_account")
+  financePassword String?             @map("finance_password")
+  financeNickname String?             @map("finance_nickname")
+
+  notes           String?
+  lastAccessedAt  DateTime?           @map("last_accessed_at")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@index([companyName])
+  @@index([platformType])
+  @@map("support_tool_accounts")
+}

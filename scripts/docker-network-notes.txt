@@ -1,0 +1,16 @@
+Docker Desktop is OK if `docker version` shows Client and Server.
+
+If `docker compose pull` fails with EOF / timeout / TLS errors:
+- Retry later; transient CDN issues are common.
+- Temporarily disable VPN / corporate proxy, or try another network.
+- Docker Desktop: Settings -> Docker Engine -> ensure DNS is reliable (e.g. "8.8.8.8").
+- Firewall: allow Docker Desktop through Windows Firewall.
+- Pull images separately, then up: `docker pull postgres:16-alpine` then `docker pull redis:7-alpine` then `docker compose up -d`.
+- From repo root, try: powershell -ExecutionPolicy Bypass -File scripts/docker-compose-retry.ps1
+
+npm scripts (run from repo root):
+- npm run docker-up        (same as docker:up)
+- npm run docker-pull      (pull images only)
+- npm run docker-down
+
+Do NOT type `docker:up` in PowerShell alone; that is not a command. Use npm run, or `docker compose up -d`.

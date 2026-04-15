@@ -1,0 +1,27 @@
+{
+  "name": "datamemo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build:shared": "npm run build -w @datamemo/shared",
+    "postinstall": "npm run build:shared",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f postgres",
+    "docker-up": "docker compose up -d",
+    "docker-down": "docker compose down",
+    "docker-logs": "docker compose logs -f postgres",
+    "docker-pull": "docker compose pull",
+    "docker-retry": "powershell -ExecutionPolicy Bypass -File scripts/docker-compose-retry.ps1",
+    "db:migrate": "npm run db:migrate -w api",
+    "db:migrate:deploy": "npm run db:migrate:deploy -w api",
+    "db:seed": "npm run db:seed -w api",
+    "dev:web": "npm run dev -w web",
+    "dev:api": "npm run start:dev -w api",
+    "build": "npm run build:shared && npm run build -w api && npm run build -w web",
+    "lint": "npm run lint -w web && npm run lint -w api"
+  }
+}
